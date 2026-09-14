@@ -3,7 +3,7 @@ const clientPromise = require('../_db.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -11,7 +11,13 @@ module.exports = async function handler(req, res) {
   const col = client.db('price_list').collection('products');
   const { id } = req.query;
 
-  if (req.method === 'PUT') {
+  if (req.method === 'GET') {
+    const doc = await col.findOne({ _id: new ObjectId(id) });
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    return res.json({ ...doc, _id: doc._id.toString() });
+  }
+
+  if (req.method === 'PATCH') {
     await col.updateOne({ _id: new ObjectId(id) }, { $set: req.body });
     return res.json({ ok: true });
   }
